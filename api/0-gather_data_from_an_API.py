@@ -8,41 +8,47 @@ from sys import argv
 
 
 if __name__ == "__main__":
-    import json
-    import sys
-    import urllib.request
+    """
+        request user info by employee ID
+    """
+    request_employee = requests.get(
+        'https://jsonplaceholder.typicode.com/users/{}/'.format(argv[1]), verify=False)
+    """
+        convert json to dictionary
+    """
+    employee = json.loads(request_employee.text)
+    """
+        extract employee name
+    """
+    employee_name = employee.get("name")
 
     """
-    format the employees id with the url
-    https://jsonplaceholder.typicode.com/users/{employees_id}
-    after getting it from the command line using the sys module
+        request user's TODO list
     """
-    employee_id = sys.argv[1]
-    url1 = f"https://jsonplaceholder.typicode.com/users/{employee_id}/todos"
-    url2 = f"https://jsonplaceholder.typicode.com/users/{employee_id}/"
-    # create a request objects at first using urllib.request.Request()
-    req_object1 = urllib.request.Request(url1, method="GET")
-    req_object2 = urllib.request.Request(url2, method="GET")
-    # fetch the resources using the request objects and thefunction
-    # urllib.request.urlopen
-    with urllib.request.urlopen(req_object1) as response_object1:
-        response1 = json.load(response_object1)
-    with urllib.request.urlopen(req_object2) as response_object2:
-        response2 = json.load(response_object2)
-    # create an empty list to store completed tasks
-    completed_tasks = []
-    # iterate through all task to get task with boolean value true
-    for task in response1:
-        if task['completed'] is not True:
-            continue
-        completed_tasks.append(task)
-    # get length for completed task and all task (complete and incomplete)
-    no_of_comptasks = len(completed_tasks)
-    totalno_of_task = len(response1)
-    # get the employee name
-    employee_name = response2["name"]
-    # display the required format in the docs
-    print(f"Employee {employee_name} is done with tasks({no_of_comptasks}/\
-{totalno_of_task}):")
-    for comp_tasks in completed_tasks:
-        print(f"\t {comp_tasks['title']}")
+    request_todos = requests.get(
+        'https://jsonplaceholder.typicode.com/users/{}/todos'.format(argv[1]), verify=False)
+    """
+        dictionary to store task status in boolean format
+    """
+    tasks = {}
+    """
+        convert json to list of dictionaries
+    """
+    employee_todos = json.loads(request_todos.text)
+    """
+        loop through dictionary & get completed tasks
+    """
+    for dictionary in employee_todos:
+        tasks.update({dictionary.get("title"): dictionary.get("completed")})
+
+    """
+        return name, total number of tasks & completed tasks
+    """
+    EMPLOYEE_NAME = employee_name
+    TOTAL_NUMBER_OF_TASKS = len(tasks)
+    NUMBER_OF_DONE_TASKS = len([k for k, v in tasks.items() if v is True])
+    print("Employee {} is done with tasks({}/{}):".format(
+        EMPLOYEE_NAME, NUMBER_OF_DONE_TASKS, TOTAL_NUMBER_OF_TASKS))
+    for k, v in tasks.items():
+        if v is True:
+            print("\t {}".format(k))

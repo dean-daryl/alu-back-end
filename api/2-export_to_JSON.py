@@ -1,27 +1,21 @@
 #!/usr/bin/python3
-""""Module"""
+"""get TODO list"""
 
+import csv
 import json
 import requests
 import sys
-
-if __name__ == '__main__':
-    employee_id = sys.argv[1]
-    user_url = "https://jsonplaceholder.typicode.com/users/{}" \
-        .format(employee_id)
-    todos_url = "https://jsonplaceholder.typicode.com/users/{}/todos/" \
-        .format(employee_id)
-
-    user_info = requests.request('GET', user_url).json()
-    todos_info = requests.request('GET', todos_url).json()
-
-    employee_username = user_info["username"]
-
-    todos_info_sorted = [
-        dict(zip(["task", "completed", "username"],
-                 [task["title"], task["completed"], employee_username]))
-        for task in todos_info]
-
-    user_dict = {str(employee_id): todos_info_sorted}
-    with open(str(employee_id) + '.json', "w") as file:
-        file.write(json.dumps(user_dict))
+if __name__ == "__main__":
+    link = "https://jsonplaceholder.typicode.com/users/{}".format(sys.argv[1])
+    res = requests.get(link, verify=False)
+    user = json.loads(res.text)
+    num = sys.argv[1]
+    link = "https://jsonplaceholder.typicode.com/users/{}/todos".format(num)
+    res = requests.get(link, verify=False)
+    todos = json.loads(res.text)
+    data = [{"task": i["title"],
+             "completed": i["completed"],
+             "username": user["username"]} for i in todos]
+    json_data = json.dumps({"{}".format(user["id"]): data})
+    with open("{}.json".format(user["id"]), 'w', encoding='utf-8') as f:
+        f.write(json_data)
